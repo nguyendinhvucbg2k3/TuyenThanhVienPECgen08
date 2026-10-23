@@ -21,7 +21,7 @@ Mở `script.js`, dán URL vào:
 ```js
 SCRIPT_URL: "https://script.google.com/macros/s/XXXX/exec",
 ```
-Muốn khoá đăng ký ngoài thời gian 26/10 – 05/11/2026 thì đặt `ENFORCE_DATES: true`.
+Muốn khoá đăng ký ngoài thời gian Sơ tuyển (26/10 – 04/11/2026) thì đặt `ENFORCE_DATES: true`.
 
 > Nếu sửa `Code.gs` sau này: **Triển khai → Quản lý các lần triển khai → Chỉnh sửa → Phiên bản mới** (URL giữ nguyên).
 

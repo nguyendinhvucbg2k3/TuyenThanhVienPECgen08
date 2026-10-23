@@ -220,6 +220,57 @@ input:focus, textarea:focus { outline: none; border-color: var(--orange); box-sh
   transition: border-color .2s, transform .2s;
 }
 .contact:hover { border-color: var(--orange); transform: translateX(4px); }
+/* ---------- Timeline ---------- */
+.countdown {
+  text-align: center; background: var(--card); border: 1px solid var(--line);
+  border-top: 3px solid var(--orange); border-radius: var(--radius); padding: 28px 20px; margin-bottom: 28px;
+}
+.countdown__label { font-family: "Chakra Petch", sans-serif; font-weight: 600; font-size: 18px; margin-bottom: 16px; }
+.countdown__boxes { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; }
+.countdown__boxes div {
+  min-width: 92px; background: var(--bg); border: 1px solid rgba(255,106,0,.4); border-radius: 10px;
+  padding: 14px 10px; display: flex; flex-direction: column;
+}
+.countdown__boxes strong { font-family: "Chakra Petch", sans-serif; font-size: 42px; line-height: 1; color: var(--orange); }
+.countdown__boxes span { color: var(--muted); font-size: 13px; margin-top: 6px; text-transform: uppercase; letter-spacing: 1px; }
+
+.rounds { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 28px; }
+.round {
+  display: flex; gap: 18px; background: var(--card); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 24px;
+}
+.round__num { font-family: "Chakra Petch", sans-serif; font-size: 44px; font-weight: 700; color: var(--orange); line-height: 1; }
+.round h3 { font-size: 22px; }
+.round__date { color: var(--orange-2); font-weight: 600; margin: 4px 0 10px; }
+.round__body > p:not(.round__date):not(.round__state) { color: #ccc; font-size: 15px; }
+.round__actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+.round__state { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 10px; border-radius: 20px; margin-bottom: 6px; }
+.round.is-active { border-color: var(--orange); box-shadow: 0 0 30px rgba(255,106,0,.18); }
+.round.is-done { opacity: .6; }
+
+.calendar-wrap { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; }
+.calendar { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+.month h4 { font-family: "Chakra Petch", sans-serif; text-align: center; font-size: 18px; margin-bottom: 12px; }
+.month__grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
+.month__grid .dow { color: var(--muted); font-size: 12px; font-weight: 600; padding: 4px 0; }
+.day {
+  aspect-ratio: 1; display: grid; place-items: center; border-radius: 8px; font-size: 14px;
+  background: var(--bg); border: 1px solid transparent; position: relative;
+}
+.day.empty { background: transparent; }
+.day.r1 { background: rgba(255,106,0,.22); color: #fff; }
+.day.r2 { background: var(--orange); color: #111; font-weight: 700; }
+.day.r3 { background: #ffd23f; color: #111; font-weight: 700; }
+.day.today { border-color: #fff; }
+.day[title] { cursor: help; }
+.legend { display: flex; gap: 18px; flex-wrap: wrap; align-items: center; justify-content: center; margin-top: 20px; font-size: 14px; color: #ccc; }
+.legend span { display: flex; align-items: center; gap: 6px; }
+.lg { width: 14px; height: 14px; border-radius: 4px; display: inline-block; }
+.lg--r1 { background: rgba(255,106,0,.35); }
+.lg--r2 { background: var(--orange); }
+.lg--r3 { background: #ffd23f; }
+.lg--today { border: 2px solid #fff; }
+
 .contact span { font-weight: 600; }
 .contact strong { color: var(--orange); font-weight: 500; word-break: break-all; }
 
@@ -229,7 +280,7 @@ input:focus, textarea:focus { outline: none; border-color: var(--orange); box-sh
 @media (max-width: 900px) {
   .hero__grid, .landing { grid-template-columns: 1fr; }
   .hero__kv, .landing__kv { max-width: 420px; margin: 0 auto; }
-  .grid-3, .grid-2 { grid-template-columns: 1fr; }
+  .grid-3, .grid-2, .rounds, .calendar { grid-template-columns: 1fr; }
 }
 @media (max-width: 760px) {
   .nav__toggle { display: block; }
@@ -240,4 +291,88 @@ input:focus, textarea:focus { outline: none; border-color: var(--orange); box-sh
   .nav__links.open { display: flex; }
   .form-card, .card, .landing { padding: 20px; }
   .steps li { font-size: 12px; padding: 4px 10px; }
+  .countdown__boxes div { min-width: 68px; }
+  .countdown__boxes strong { font-size: 30px; }
+  .round { flex-direction: column; gap: 8px; }
 }
+
+
+/* =========================================================
+   LIGHT EFFECTS
+   ========================================================= */
+
+/* 1. Ánh sáng nền chuyển động (ambient glow) */
+body::before, body::after {
+  content: ""; position: fixed; z-index: -1; pointer-events: none;
+  width: 55vmax; height: 55vmax; border-radius: 50%; filter: blur(90px); opacity: .22;
+}
+body::before { background: var(--orange); top: -20vmax; left: -15vmax; animation: drift1 18s ease-in-out infinite alternate; }
+body::after  { background: #ff2d2d; bottom: -25vmax; right: -20vmax; opacity: .14; animation: drift2 22s ease-in-out infinite alternate; }
+@keyframes drift1 { to { transform: translate(25vw, 30vh) scale(1.15); } }
+@keyframes drift2 { to { transform: translate(-30vw, -25vh) scale(.9); } }
+.section--dark { background: rgba(10,10,10,.82); }
+.hero { background: radial-gradient(circle at 80% 30%, rgba(255,106,0,.18), transparent 50%), linear-gradient(180deg, rgba(10,10,10,.95), rgba(15,15,16,.6)); }
+
+/* 2. Đèn theo con trỏ chuột */
+.cursor-glow {
+  position: fixed; top: 0; left: 0; width: 420px; height: 420px; margin: -210px 0 0 -210px;
+  border-radius: 50%; pointer-events: none; z-index: 1;
+  background: radial-gradient(circle, rgba(255,106,0,.16) 0%, rgba(255,106,0,.05) 40%, transparent 70%);
+  mix-blend-mode: screen; opacity: 0; transition: opacity .4s;
+  will-change: transform;
+}
+.cursor-glow.on { opacity: 1; }
+
+/* 3. Viền sáng theo chuột trên các thẻ */
+.glow { position: relative; isolation: isolate; }
+.glow::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: -1;
+  background: radial-gradient(380px circle at var(--mx, 50%) var(--my, 50%), rgba(255,106,0,.14), transparent 60%);
+  opacity: 0; transition: opacity .3s;
+}
+.glow:hover::after { opacity: 1; }
+.glow:hover { border-color: rgba(255,106,0,.6); box-shadow: 0 0 28px rgba(255,106,0,.15); }
+
+/* 4. Nút: vệt sáng quét qua + phát sáng */
+.btn { position: relative; overflow: hidden; }
+.btn::after {
+  content: ""; position: absolute; top: 0; left: -75%; width: 50%; height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,.55), transparent);
+  transform: skewX(-20deg); animation: shine 3.5s ease-in-out infinite;
+}
+.btn--ghost::after { background: linear-gradient(120deg, transparent, rgba(255,106,0,.35), transparent); }
+@keyframes shine { 0%, 60% { left: -75%; } 100% { left: 130%; } }
+.hero__cta .btn:not(.btn--ghost), #btnStart { animation: pulseGlow 2.4s ease-in-out infinite; }
+@keyframes pulseGlow {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.25) saturate(1.2); }
+}
+body { overflow-x: clip; }
+
+/* 5. Chữ neon */
+h1 .accent, .title .accent, .landing__info h3 {
+  text-shadow: 0 0 10px rgba(255,106,0,.55), 0 0 28px rgba(255,106,0,.35);
+}
+.nav__logo span { text-shadow: 0 0 12px rgba(255,106,0,.8); }
+.countdown__boxes strong { text-shadow: 0 0 14px rgba(255,106,0,.7); }
+
+/* 6. KV phát sáng nhịp thở */
+.hero__kv img, .landing__kv { animation: kvGlow 4s ease-in-out infinite; }
+@keyframes kvGlow {
+  0%, 100% { box-shadow: 0 0 30px rgba(255,106,0,.2); }
+  50% { box-shadow: 0 0 70px rgba(255,106,0,.5), 0 0 120px rgba(255,45,45,.2); }
+}
+
+/* 7. Đường sáng chạy dưới thanh menu */
+.nav::after {
+  content: ""; position: absolute; left: 0; bottom: -1px; height: 2px; width: 30%;
+  background: linear-gradient(90deg, transparent, var(--orange), transparent);
+  animation: scan 5s linear infinite;
+}
+@keyframes scan { from { transform: translateX(-100%); } to { transform: translateX(400%); } }
+
+/* Tắt hiệu ứng nếu người dùng chọn giảm chuyển động / thiết bị cảm ứng */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+@media (hover: none) { .cursor-glow { display: none; } }
