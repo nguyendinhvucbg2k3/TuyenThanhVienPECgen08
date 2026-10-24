@@ -115,7 +115,6 @@ const CONFIG = {
 - **Fanpage:** https://www.facebook.com/esc.phenikaa/
 - **TikTok:** https://www.tiktok.com/@phenikaaesportclub
 - **Group cộng đồng:** https://www.facebook.com/groups/esc.pka
-- **Nhóm Zalo Hỗ Trợ Gen 8:** https://zalo.me/g/vuhn4eo5ctcch0o1qbg5
 - **Email:** esc.pka@gmail.com
 - **Liên hệ trực tiếp:** https://www.facebook.com/EbeBunny05/
 
