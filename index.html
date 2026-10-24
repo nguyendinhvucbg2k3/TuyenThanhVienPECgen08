@@ -371,6 +371,10 @@
             </div>
 
             <div class="form-card">
+              <label class="opt copy-opt">
+                <input type="checkbox" id="sendCopy" name="sendCopy" checked />
+                <span>📩 Gửi một bản sao lưu câu trả lời của tôi qua địa chỉ <strong>Email</strong> đã đăng ký</span>
+              </label>
               <div class="form-nav">
                 <button type="button" class="btn btn--ghost" data-go="2">← Quay lại</button>
                 <button type="submit" class="btn" id="btnSubmit">Gửi đơn đăng ký 🚀</button>
@@ -387,12 +391,18 @@
               <div class="thanks__icon">🎉</div>
               <h3>Cảm ơn <span id="thanksName">bạn</span> đã đăng ký!</h3>
               <p>Đơn ứng tuyển vào <strong class="accent" id="thanksBan"></strong> của bạn đã được PEC ghi nhận.</p>
+              <p class="thanks__mail-note" id="thanksMailNote">📩 Một bản sao câu trả lời đã được gửi tự động tới email <strong class="accent" id="thanksEmail"></strong> của bạn <em>(vui lòng kiểm tra thêm mục Quảng cáo / Thư rác nếu chưa thấy trong Hộp thư đến)</em>.</p>
               <p>📧 Vui lòng <strong>chờ email / tin nhắn</strong> thông báo kết quả <strong>Vòng Sơ tuyển</strong>. Nếu vượt qua, bạn sẽ bước vào <strong>Vòng Phỏng vấn ngày 06/11/2026</strong> (trực tiếp tại Đại học Phenikaa). Kết quả chính thức sẽ được công bố vào ngày <strong>10/11/2026</strong>.</p>
               <p class="muted">Trong lúc chờ, hãy theo dõi Fanpage và tham gia <strong>Nhóm Zalo Hỗ Trợ</strong> của PEC để nhận thông báo nhanh nhất nhé!</p>
               <div class="hero__cta thanks__cta">
                 <a href="https://www.facebook.com/esc.phenikaa/" target="_blank" rel="noopener" class="btn">Theo dõi Fanpage</a>
                 <a href="https://zalo.me/g/vuhn4eo5ctcch0o1qbg5" target="_blank" rel="noopener" class="btn btn--ghost">Vào Nhóm Zalo Hỗ Trợ</a>
+                <button type="button" class="btn btn--ghost" id="btnDownloadCopy">⬇️ Tải bản sao câu trả lời</button>
               </div>
+              <details class="backup-preview" id="backupDetails">
+                <summary>📋 Xem lại bản sao câu trả lời vừa nộp</summary>
+                <div class="backup-preview__list" id="backupList"></div>
+              </details>
             </div>
             <div class="thanks__qr">
               <a href="https://zalo.me/g/vuhn4eo5ctcch0o1qbg5" target="_blank" rel="noopener">

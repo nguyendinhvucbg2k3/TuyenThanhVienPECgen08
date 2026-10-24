@@ -334,6 +334,7 @@ input:focus, textarea:focus { outline: none; border-color: var(--orange); box-sh
 .field .err { color: var(--red); font-size: 13.5px; margin-top: 6px; }
 .form-nav { display: flex; justify-content: space-between; gap: 12px; margin-top: 26px; flex-wrap: wrap; }
 .form-card .form-nav:first-child { margin-top: 0; }
+.copy-opt { margin-bottom: 16px; font-size: 14.5px; line-height: 1.45; }
 .form-error { color: var(--red); margin-top: 12px; text-align: center; }
 .branch { display: none; }
 .branch.active { display: block; }
@@ -352,7 +353,53 @@ input:focus, textarea:focus { outline: none; border-color: var(--orange); box-sh
 .thanks__icon { font-size: 48px; line-height: 1; }
 .thanks h3 { font-size: clamp(22px, 3vw, 28px); margin: 8px 0 12px; }
 .thanks p { margin-bottom: 10px; }
+.thanks__mail-note {
+  background: rgba(255, 106, 0, .09);
+  border: 1px solid rgba(255, 106, 0, .35);
+  border-radius: 10px;
+  padding: 11px 14px;
+  font-size: 14px;
+  line-height: 1.5;
+}
 .thanks__cta { margin-top: 20px; justify-content: flex-start; }
+.backup-preview {
+  margin-top: 18px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  text-align: left;
+}
+.backup-preview summary {
+  padding: 12px 15px;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--orange);
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.backup-preview summary::-webkit-details-marker { display: none; }
+.backup-preview summary::after { content: "▾"; font-size: 14px; transition: transform .2s; }
+.backup-preview[open] summary::after { transform: rotate(180deg); }
+.backup-preview__list {
+  border-top: 1px solid var(--line);
+  padding: 12px 15px;
+  display: grid;
+  gap: 10px;
+  max-height: 280px;
+  overflow-y: auto;
+}
+.backup-item {
+  padding-bottom: 10px;
+  border-bottom: 1px dashed rgba(255, 255, 255, .08);
+}
+.backup-item:last-child { border-bottom: none; padding-bottom: 0; }
+.backup-item span { display: block; font-size: 12.5px; color: var(--muted); margin-bottom: 3px; }
+.backup-item strong { display: block; font-size: 14px; color: var(--text); white-space: pre-wrap; word-break: break-word; }
 .thanks__qr {
   background: var(--bg);
   border: 1px solid var(--line);

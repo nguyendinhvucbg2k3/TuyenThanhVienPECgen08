@@ -54,7 +54,7 @@ function branchColumns(key) {
   return [TIME_COL].concat(COMMON, BRANCHES[key].questions);
 }
 
-/** Chạy 1 lần để tạo & căn chỉnh các sheet */
+/** Chạy 1 lần để tạo & căn chỉnh các sheet (đồng thời cấp quyền gửi Email) */
 function setup() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   ss.setSpreadsheetTimeZone('Asia/Ho_Chi_Minh');
@@ -65,6 +65,8 @@ function setup() {
   if (def && def.getLastRow() === 0 && ss.getSheets().length > 1) ss.deleteSheet(def);
   ss.setActiveSheet(ss.getSheetByName(MAIN_SHEET));
   ss.moveActiveSheet(1);
+  // Kiểm tra hạn mức gửi mail để Google hỏi cấp quyền MailApp ngay khi chạy setup()
+  Logger.log('Hạn mức email còn lại trong ngày: ' + MailApp.getRemainingDailyQuota());
 }
 
 function getOrCreate(ss, name) {
@@ -201,6 +203,106 @@ function handleTrafficQueue(params) {
   };
 }
 
+/** Tạo và gửi email bản sao câu trả lời cho ứng viên */
+function escapeHtml(str) {
+  return String(str == null ? '' : str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/\n/g, '<br>');
+}
+
+function sendBackupEmail(data, branchKey, now) {
+  const to = String(data.email || '').trim();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) return false;
+  if (data.sendCopy === false) return false;
+  if (MailApp.getRemainingDailyQuota() <= 0) return false;
+
+  const timeStr = Utilities.formatDate(now, 'Asia/Ho_Chi_Minh', 'HH:mm:ss - dd/MM/yyyy');
+  const pairs = [['Thời gian nộp đơn', timeStr]];
+  COMMON.forEach(q => pairs.push([q[1], data[q[0]] || '']));
+  if (branchKey && BRANCHES[branchKey]) {
+    BRANCHES[branchKey].questions.forEach(q => pairs.push([q[1], data[q[0]] || '']));
+  }
+
+  const rowsHtml = pairs.map(p => `
+    <tr>
+      <td style="padding:12px 14px;border-bottom:1px solid #26262c;color:#a8a8b3;font-size:13px;width:38%;vertical-align:top;font-weight:600;">
+        ${escapeHtml(p[0])}
+      </td>
+      <td style="padding:12px 14px;border-bottom:1px solid #26262c;color:#f5f5f7;font-size:14px;line-height:1.6;vertical-align:top;">
+        ${escapeHtml(p[1])}
+      </td>
+    </tr>
+  `).join('');
+
+  const subject = `[PEC Gen 8] Xác nhận đăng ký & Bản sao câu trả lời – ${data.hoTen || 'Ứng viên'}`;
+  const plainBody =
+    `Xin chào ${data.hoTen || 'bạn'},\n\n` +
+    `Phenikaa Esports Club (PEC) đã nhận được đơn ứng tuyển Gen 8 ("New Blood, New Era") của bạn vào ${data.ban || 'CLB'}.\n` +
+    `- Vòng 2 (Phỏng vấn trực tiếp tại ĐH Phenikaa): 06/11/2026\n` +
+    `- Thông báo kết quả chính thức: 10/11/2026\n` +
+    `- Nhóm Zalo Hỗ Trợ: https://zalo.me/g/vuhn4eo5ctcch0o1qbg5\n\n` +
+    `--- BẢN SAO CÂU TRẢ LỜI CỦA BẠN ---\n` +
+    pairs.map(p => `• ${p[0]}\n  -> ${p[1]}`).join('\n\n') +
+    `\n\nTrân trọng,\nPhenikaa Esports Club (PEC)`;
+
+  const htmlBody = `
+  <div style="background:#0a0a0c;padding:28px 14px;font-family:'Segoe UI',Roboto,Arial,sans-serif;color:#f5f5f7;">
+    <div style="max-width:640px;margin:0 auto;background:#141418;border:1px solid #2a2a32;border-radius:16px;overflow:hidden;">
+      <div style="background:linear-gradient(135deg,#ff6a00,#cc4400);padding:24px 24px;text-align:center;">
+        <div style="font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#fff2e6;">PHENIKAA ESPORTS CLUB · GEN 8</div>
+        <h1 style="margin:6px 0 0;font-size:22px;color:#ffffff;text-transform:uppercase;letter-spacing:0.5px;">Xác nhận đăng ký & Bản sao câu trả lời</h1>
+      </div>
+      <div style="padding:24px;">
+        <p style="margin:0 0 12px;font-size:15px;line-height:1.6;color:#f5f5f7;">
+          Xin chào <strong style="color:#ff8533;">${escapeHtml(data.hoTen || 'bạn')}</strong>,
+        </p>
+        <p style="margin:0 0 16px;font-size:14px;line-height:1.65;color:#d0d0d8;">
+          Cảm ơn bạn đã đăng ký tham gia đợt tuyển thành viên <strong>PEC Gen 8 – "New Blood, New Era"</strong> tại <strong style="color:#ff8533;">${escapeHtml(data.ban || '')}</strong>. Hệ thống đã ghi nhận đơn của bạn thành công!
+        </p>
+
+        <div style="background:#1b1b22;border-left:4px solid #ff6a00;border-radius:8px;padding:14px 16px;margin-bottom:20px;font-size:13.5px;line-height:1.65;color:#e2e2e8;">
+          <div style="font-weight:700;color:#ff8533;margin-bottom:4px;">📅 LỊCH TRÌNH TIẾP THEO</div>
+          • <strong>Đóng đơn Vòng 1 (Sơ tuyển):</strong> 23:59 ngày 04/11/2026<br>
+          • <strong>Vòng 2 (Phỏng vấn trực tiếp tại ĐH Phenikaa):</strong> 06/11/2026<br>
+          • <strong>Công bố kết quả chính thức:</strong> 10/11/2026
+        </div>
+
+        <div style="text-align:center;margin:20px 0 24px;">
+          <a href="https://zalo.me/g/vuhn4eo5ctcch0o1qbg5" target="_blank" style="display:inline-block;background:#ff6a00;color:#ffffff;text-decoration:none;font-weight:700;font-size:14px;padding:12px 22px;border-radius:10px;margin:4px;">💬 Vào Nhóm Zalo Hỗ Trợ</a>
+          <a href="https://www.facebook.com/esc.phenikaa/" target="_blank" style="display:inline-block;background:#24242c;color:#f5f5f7;text-decoration:none;font-weight:600;font-size:14px;padding:12px 20px;border-radius:10px;border:1px solid #3a3a44;margin:4px;">🌐 Theo dõi Fanpage PEC</a>
+        </div>
+
+        <h3 style="margin:0 0 10px;font-size:14px;text-transform:uppercase;letter-spacing:1px;color:#ff8533;">
+          📋 Bản sao lưu câu trả lời của bạn
+        </h3>
+        <table style="width:100%;border-collapse:collapse;background:#101014;border:1px solid #26262c;border-radius:10px;overflow:hidden;">
+          <tbody>
+            ${rowsHtml}
+          </tbody>
+        </table>
+
+        <p style="margin:20px 0 0;font-size:12.5px;color:#8e8e99;text-align:center;line-height:1.5;">
+          Nếu có bất kỳ thắc mắc nào hoặc cần chỉnh sửa thông tin, bạn vui lòng liên hệ qua Nhóm Zalo Hỗ Trợ hoặc Fanpage Phenikaa Esports Club.<br>
+          <strong>© 2026 Phenikaa Esports Club · New Blood. New Energy. New Era.</strong>
+        </p>
+      </div>
+    </div>
+  </div>`;
+
+  MailApp.sendEmail({
+    to: to,
+    name: 'Phenikaa Esports Club (PEC)',
+    replyTo: 'esc.pka@gmail.com',
+    subject: subject,
+    body: plainBody,
+    htmlBody: htmlBody,
+  });
+  return true;
+}
+
 /** Nhận dữ liệu từ website */
 function doPost(e) {
   const lock = LockService.getScriptLock();
@@ -215,12 +317,20 @@ function doPost(e) {
     const key = Object.keys(BRANCHES).find(k => BRANCHES[k].questions.some(q => data[q[0]]));
     if (key) writeRow(getOrCreate(ss, BRANCHES[key].sheet), branchColumns(key), data, now);
 
+    // Gửi email bản sao câu trả lời cho ứng viên (bọc trong try/catch để không bao giờ làm lỗi việc lưu đơn)
+    let mailSent = false;
+    try {
+      mailSent = sendBackupEmail(data, key, now);
+    } catch (mailErr) {
+      Logger.log('Không gửi được email bản sao: ' + mailErr);
+    }
+
     // Giải phóng chỗ ngay khi ứng viên đã nộp đơn thành công
     if (data._cid) {
       try { handleTrafficQueue({ action: 'leave', cid: data._cid }); } catch (_) {}
     }
 
-    return json({ ok: true });
+    return json({ ok: true, mailSent: mailSent });
   } catch (err) {
     return json({ ok: false, error: String(err) });
   } finally {
