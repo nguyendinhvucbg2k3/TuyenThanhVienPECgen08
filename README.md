@@ -69,10 +69,16 @@ const CONFIG = {
   INTERVIEW_START / INTERVIEW_END,                   // Ngày phỏng vấn 06/11
   RESULT_START / RESULT_END,                         // Ngày thông báo kết quả 10/11
   LOCK_BEFORE_OPEN: true,         // Khoá nút Đăng ký ngay trước 10:00 26/10
+  MAX_CONCURRENT_USERS: 25,       // Giới hạn số người truy cập/điền form cùng lúc (Virtual Waiting Room)
+  QUEUE_POLL_MS: 4000,            // Tự động kiểm tra lượt trống mỗi 4 giây
+  HEARTBEAT_MS: 45000,            // Giữ lượt hoạt động mỗi 45 giây
+  SUBMIT_COOLDOWN_SEC: 60,        // Khoảng cách tối thiểu giữa 2 lần gửi đơn (60s)
 };
 ```
 
-> **Dành cho Ban Tổ Chức muốn test trước giờ mở đơn:** Thêm tham số `?test=1` vào cuối URL trang web (ví dụ: `https://.../index.html?test=1`). Khi có tham số này, web sẽ hiển thị nhãn `TEST MODE` và mở khóa toàn bộ nút đăng ký để test nộp form.
+> **Dành cho Ban Tổ Chức:**
+> - **Test mở đơn sớm:** Thêm `?test=1` vào cuối URL (ví dụ: `https://.../index.html?test=1`).
+> - **Test phòng chờ giới hạn truy cập (Virtual Waiting Room):** Thêm `?queue=1` vào cuối URL (ví dụ: `https://.../index.html?queue=1`).
 
 > [!IMPORTANT]
 > Trước khi chính thức mở đơn, hãy đặt `ENFORCE_DATES: true` và kiểm tra `SCRIPT_URL` đã được điền.

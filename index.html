@@ -420,6 +420,23 @@
     <div class="container"><img src="assets/logo.png" alt="Logo PEC" class="footer__logo" />© 2026 Phenikaa Esports Club · New Blood. New Energy. New Era.</div>
   </footer>
 
+  <!-- ============ PHÒNG CHỜ TRUY CẬP (CHỐNG QUÁ TẢI) ============ -->
+  <div class="queue-overlay" id="queueOverlay" aria-hidden="true">
+    <div class="queue-modal">
+      <img src="assets/logo.png" alt="Logo PEC" class="queue-modal__logo" />
+      <p class="tag">⏳ HỆ THỐNG ĐANG ĐIỀU PHỐI LƯU LƯỢNG</p>
+      <h3>Phòng chờ truy cập <span class="accent">PEC Gen 8</span></h3>
+      <p class="muted">Hiện đang có nhiều bạn truy cập cùng thời điểm. Để đảm bảo trang web và đơn đăng ký hoạt động ổn định, vui lòng giữ nguyên màn hình trong giây lát — hệ thống sẽ tự động đưa bạn vào ngay khi có lượt trống!</p>
+      <div class="queue-stats">
+        <div><span>Vị trí hàng chờ</span><strong id="qPos">#1</strong></div>
+        <div><span>Đang trực tuyến</span><strong id="qActive">25/25</strong></div>
+        <div><span>Ước tính chờ</span><strong id="qEta">~8 giây</strong></div>
+      </div>
+      <div class="queue-bar"><div class="queue-bar__fill" id="qBar"></div></div>
+      <p class="small muted" id="qNote">🔄 Đang tự động kiểm tra lượt trống...</p>
+    </div>
+  </div>
+
   <script src="script.js"></script>
 </body>
 </html>

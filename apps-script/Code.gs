@@ -125,10 +125,86 @@ function writeRow(sh, cols, data, now) {
   sh.getRange(r, 1, 1, row.length).setValues([row]);
 }
 
+// ---- Cấu hình giới hạn người truy cập đồng thời (chống quá tải) ----
+const MAX_CONCURRENT = 25;      // Tối đa 25 người hoạt động cùng lúc (dưới ngưỡng 30 của Google Apps Script)
+const SESSION_TTL_MS = 180000;  // Giữ chỗ 3 phút / phiên (tự gia hạn khi người dùng còn mở trang)
+
+/** Quản lý hàng chờ truy cập bằng bộ nhớ đệm tốc độ cao (CacheService) */
+function handleTrafficQueue(params) {
+  const action = params.action || 'status';
+  const cid = String(params.cid || '').slice(0, 64);
+  const max = Math.min(Math.max(Number(params.max) || MAX_CONCURRENT, 5), 100);
+  const cache = CacheService.getScriptCache();
+  const now = Date.now();
+
+  let state = { active: {}, queue: [] };
+  try {
+    const raw = cache.get('pec_traffic_v1');
+    if (raw) state = JSON.parse(raw);
+  } catch (_) {}
+
+  // Dọn các phiên đã hết hạn
+  Object.keys(state.active).forEach(id => {
+    if (state.active[id] <= now) delete state.active[id];
+  });
+  state.queue = (state.queue || []).filter(item => item && item.exp > now && !state.active[item.id]);
+
+  if (action === 'leave' && cid) {
+    delete state.active[cid];
+    state.queue = state.queue.filter(item => item.id !== cid);
+    cache.put('pec_traffic_v1', JSON.stringify(state), 600);
+    return { ok: true, released: true, active: Object.keys(state.active).length, max: max };
+  }
+
+  // Đẩy người đầu hàng chờ vào nếu còn chỗ trống
+  while (Object.keys(state.active).length < max && state.queue.length > 0) {
+    const next = state.queue.shift();
+    if (next && next.id) state.active[next.id] = now + SESSION_TTL_MS;
+  }
+
+  let granted = false;
+  let position = 0;
+
+  if (!cid) {
+    granted = Object.keys(state.active).length < max;
+  } else if (state.active[cid]) {
+    // Gia hạn phiên đang hoạt động
+    state.active[cid] = now + SESSION_TTL_MS;
+    granted = true;
+  } else if (Object.keys(state.active).length < max && state.queue.length === 0) {
+    // Còn chỗ trống và không có ai xếp hàng trước
+    state.active[cid] = now + SESSION_TTL_MS;
+    granted = true;
+  } else {
+    // Đầy chỗ -> xếp vào hàng chờ
+    let idx = state.queue.findIndex(item => item.id === cid);
+    if (idx === -1) {
+      state.queue.push({ id: cid, exp: now + SESSION_TTL_MS });
+      idx = state.queue.length - 1;
+    } else {
+      state.queue[idx].exp = now + SESSION_TTL_MS;
+    }
+    position = idx + 1;
+  }
+
+  cache.put('pec_traffic_v1', JSON.stringify(state), 600);
+  const activeCount = Object.keys(state.active).length;
+
+  return {
+    ok: true,
+    granted: granted,
+    active: activeCount,
+    max: max,
+    queueLength: state.queue.length,
+    position: position,
+    etaSec: position * 8,
+  };
+}
+
 /** Nhận dữ liệu từ website */
 function doPost(e) {
   const lock = LockService.getScriptLock();
-  lock.waitLock(20000);
+  lock.waitLock(28000);
   try {
     const data = JSON.parse(e.postData.contents);
     const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -139,6 +215,11 @@ function doPost(e) {
     const key = Object.keys(BRANCHES).find(k => BRANCHES[k].questions.some(q => data[q[0]]));
     if (key) writeRow(getOrCreate(ss, BRANCHES[key].sheet), branchColumns(key), data, now);
 
+    // Giải phóng chỗ ngay khi ứng viên đã nộp đơn thành công
+    if (data._cid) {
+      try { handleTrafficQueue({ action: 'leave', cid: data._cid }); } catch (_) {}
+    }
+
     return json({ ok: true });
   } catch (err) {
     return json({ ok: false, error: String(err) });
@@ -147,7 +228,19 @@ function doPost(e) {
   }
 }
 
-function doGet() {
+function doGet(e) {
+  const params = (e && e.parameter) || {};
+  if (params.action) {
+    const lock = LockService.getScriptLock();
+    if (lock.tryLock(5000)) {
+      try {
+        return json(handleTrafficQueue(params));
+      } finally {
+        lock.releaseLock();
+      }
+    }
+    return json({ ok: true, granted: true, busy: true });
+  }
   return json({ ok: true, message: 'PEC Gen 8 API đang hoạt động' });
 }
 

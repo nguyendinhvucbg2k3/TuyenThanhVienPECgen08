@@ -393,6 +393,48 @@ input:focus, textarea:focus { outline: none; border-color: var(--orange); box-sh
 .btn.is-locked::before { content: "🔒 "; }
 #btnStart:disabled { animation: none; filter: grayscale(.4); cursor: not-allowed; }
 
+/* ---------- Phòng chờ truy cập (Chống quá tải) ---------- */
+.queue-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(8, 8, 10, .92);
+  backdrop-filter: blur(12px);
+  display: none; place-items: center; padding: 20px;
+}
+.queue-overlay.active { display: grid; animation: fade .25s ease; }
+.queue-modal {
+  width: min(100%, 480px);
+  background: var(--card);
+  border: 1px solid rgba(255,106,0,.5);
+  border-top: 4px solid var(--orange);
+  border-radius: var(--radius);
+  padding: clamp(22px, 4vw, 32px);
+  text-align: center;
+  box-shadow: 0 0 60px rgba(255,106,0,.25);
+}
+.queue-modal__logo { width: 64px; height: 64px; object-fit: contain; margin: 0 auto 12px; filter: drop-shadow(0 0 12px rgba(255,106,0,.7)); }
+.queue-modal h3 { font-size: clamp(21px, 3.5vw, 26px); margin-bottom: 10px; }
+.queue-stats {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px;
+  margin: 20px 0 16px;
+}
+.queue-stats div {
+  background: var(--bg); border: 1px solid var(--line); border-radius: 8px;
+  padding: 10px 6px; display: flex; flex-direction: column; gap: 2px;
+}
+.queue-stats span { font-size: 12px; color: var(--muted); }
+.queue-stats strong { font-family: "Chakra Petch", sans-serif; font-size: 18px; color: var(--orange); }
+.queue-bar {
+  height: 8px; background: var(--bg); border-radius: 99px; overflow: hidden;
+  border: 1px solid var(--line); margin-bottom: 12px;
+}
+.queue-bar__fill {
+  height: 100%; width: 35%;
+  background: linear-gradient(90deg, var(--orange), var(--orange-2));
+  border-radius: 99px;
+  animation: queuePulse 1.8s ease-in-out infinite alternate;
+}
+@keyframes queuePulse { from { width: 20%; } to { width: 85%; } }
+
 /* =========================================================
    LIGHT EFFECTS
    ========================================================= */

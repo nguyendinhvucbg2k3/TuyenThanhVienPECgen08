@@ -19,10 +19,33 @@ const CONFIG = {
 
   // true = khoá nút "Đăng ký ngay" cho đến đúng OPEN_AT (10:00 26/10/2026)
   LOCK_BEFORE_OPEN: true,
+
+  // Giới hạn số người truy cập đồng thời để chống quá tải hệ thống & Google Sheet
+  MAX_CONCURRENT_USERS: 25,
+  QUEUE_POLL_MS: 4000,
+  HEARTBEAT_MS: 45000,
+  SUBMIT_COOLDOWN_SEC: 60,
 };
 
 // Ban tổ chức muốn test trước giờ mở đơn: thêm ?test=1 vào cuối link website
-const TEST_MODE = new URLSearchParams(location.search).has("test");
+// Xem thử giao diện phòng chờ quá tải: thêm ?queue=1 vào cuối link website
+const URL_PARAMS = new URLSearchParams(location.search);
+const TEST_MODE = URL_PARAMS.has("test");
+const QUEUE_DEMO = URL_PARAMS.has("queue");
+
+// Mã phiên truy cập duy nhất cho mỗi tab trình duyệt
+const CLIENT_ID = (() => {
+  try {
+    let id = sessionStorage.getItem("pec_cid");
+    if (!id) {
+      id = "u_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 8);
+      sessionStorage.setItem("pec_cid", id);
+    }
+    return id;
+  } catch (_) {
+    return "u_" + Math.random().toString(36).slice(2, 10);
+  }
+})();
 
 /* ========================================================= */
 const $ = (s, el = document) => el.querySelector(s);
@@ -302,10 +325,117 @@ $("#btnNext").addEventListener("click", () => {
   goStep(3);
 });
 
-/* ---------- Gửi form ---------- */
+/* ---------- Tự động lưu nháp form (chống mất dữ liệu khi rớt mạng/F5) ---------- */
+const DRAFT_KEY = "pec_gen8_draft";
+function saveDraft() {
+  try {
+    const draft = {};
+    $$("input, textarea", form).forEach((el) => {
+      if (el.type === "radio" || el.type === "checkbox") {
+        if (el.checked) draft[el.name + ":" + el.value] = 1;
+      } else if (el.id) {
+        draft[el.id] = el.value;
+      }
+    });
+    sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+  } catch (_) {}
+}
+function restoreDraft() {
+  try {
+    const raw = sessionStorage.getItem(DRAFT_KEY);
+    if (!raw) return;
+    const draft = JSON.parse(raw);
+    $$("input, textarea", form).forEach((el) => {
+      if (el.type === "radio" || el.type === "checkbox") {
+        if (draft[el.name + ":" + el.value]) el.checked = true;
+      } else if (el.id && draft[el.id] != null) {
+        el.value = draft[el.id];
+      }
+    });
+  } catch (_) {}
+}
+restoreDraft();
+form.addEventListener("input", saveDraft);
+
+/* ---------- Hàng chờ giới hạn người truy cập cùng thời điểm ---------- */
+const queueOverlay = $("#queueOverlay");
+let slotGranted = false;
+let queueTimer = null;
+
+function setQueueModal(visible, info = {}) {
+  queueOverlay.classList.toggle("active", visible);
+  queueOverlay.setAttribute("aria-hidden", String(!visible));
+  if (visible) {
+    $("#qPos").textContent = "#" + (info.position || 1);
+    $("#qActive").textContent = `${info.active || CONFIG.MAX_CONCURRENT_USERS}/${info.max || CONFIG.MAX_CONCURRENT_USERS}`;
+    $("#qEta").textContent = `~${Math.max(4, info.etaSec || 8)} giây`;
+  }
+}
+
+async function pingTrafficQueue(action = "heartbeat") {
+  if (!CONFIG.SCRIPT_URL) return { granted: true };
+  const url = `${CONFIG.SCRIPT_URL}?action=${encodeURIComponent(action)}&cid=${encodeURIComponent(CLIENT_ID)}&max=${CONFIG.MAX_CONCURRENT_USERS}&_t=${Date.now()}`;
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 6000);
+  try {
+    const res = await fetch(url, { method: "GET", cache: "no-store", signal: ctrl.signal });
+    const data = await res.json();
+    // Nếu Apps Script bản cũ chưa có trường 'granted' thì mặc định cho qua để không khoá nhầm
+    if (typeof data.granted !== "boolean") return { granted: true };
+    return data;
+  } catch (_) {
+    // Nếu mạng chập chờn hoặc lỗi CORS tạm thời, ưu tiên cho người dùng truy cập
+    return { granted: true };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+function releaseTrafficSlot() {
+  if (!CONFIG.SCRIPT_URL || !slotGranted) return;
+  slotGranted = false;
+  const url = `${CONFIG.SCRIPT_URL}?action=leave&cid=${encodeURIComponent(CLIENT_ID)}&_t=${Date.now()}`;
+  try {
+    fetch(url, { method: "GET", mode: "no-cors", keepalive: true });
+  } catch (_) {}
+}
+
+async function checkTrafficSlot() {
+  if (QUEUE_DEMO) {
+    setQueueModal(true, { position: 3, active: CONFIG.MAX_CONCURRENT_USERS, max: CONFIG.MAX_CONCURRENT_USERS, etaSec: 15 });
+    return;
+  }
+  if (TEST_MODE) {
+    slotGranted = true;
+    setQueueModal(false);
+    return;
+  }
+  const status = await pingTrafficQueue("heartbeat");
+  if (status.granted) {
+    slotGranted = true;
+    setQueueModal(false);
+    clearInterval(queueTimer);
+    queueTimer = setInterval(() => {
+      if (document.visibilityState === "visible" && !$("#step4").classList.contains("active")) {
+        pingTrafficQueue("heartbeat");
+      }
+    }, CONFIG.HEARTBEAT_MS);
+  } else {
+    slotGranted = false;
+    setQueueModal(true, status);
+    clearInterval(queueTimer);
+    queueTimer = setInterval(checkTrafficSlot, CONFIG.QUEUE_POLL_MS);
+  }
+}
+
+checkTrafficSlot();
+addEventListener("pagehide", releaseTrafficSlot);
+
+/* ---------- Gửi form (kèm chống spam, chống nghẽn & tự động thử lại 3 lần) ---------- */
 function collectData() {
   const val = (n) => ($(`[name="${n}"]:checked`) || $(`[name="${n}"]`))?.value.trim() || "";
   const data = {
+    _cid: CLIENT_ID,
     hoTen: val("hoTen"),
     email: val("email"),
     sdt: val("sdt"),
@@ -332,6 +462,28 @@ function collectData() {
   return data;
 }
 
+async function postWithRetry(url, payload, onRetry) {
+  // Thêm độ trễ ngẫu nhiên nhỏ (100–600ms) để phân tán tải nếu hàng chục người bấm cùng 1 giây
+  await new Promise((r) => setTimeout(r, 100 + Math.floor(Math.random() * 500)));
+
+  const maxAttempts = 3;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      await fetch(url, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(payload),
+      });
+      return;
+    } catch (err) {
+      if (attempt === maxAttempts) throw err;
+      onRetry?.(attempt + 1, maxAttempts);
+      await new Promise((r) => setTimeout(r, attempt * 1800 + Math.floor(Math.random() * 600)));
+    }
+  }
+}
+
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   const scope = $(`.branch[data-branch="${currentBranch}"]`);
@@ -340,6 +492,16 @@ form.addEventListener("submit", async (e) => {
     $("#submitError").textContent = "Hiện chưa trong thời gian nhận đơn Sơ tuyển (Mở đơn lúc 10:00 – 26/10/2026).";
     return;
   }
+
+  // Chống bấm gửi liên tục (cooldown)
+  try {
+    const lastSent = Number(localStorage.getItem("pec_last_submit") || 0);
+    const waitSec = Math.ceil((CONFIG.SUBMIT_COOLDOWN_SEC * 1000 - (Date.now() - lastSent)) / 1000);
+    if (!TEST_MODE && waitSec > 0) {
+      $("#submitError").textContent = `Bạn vừa gửi đơn xong. Vui lòng đợi ${waitSec} giây nếu muốn gửi lại.`;
+      return;
+    }
+  } catch (_) {}
 
   const btn = $("#btnSubmit");
   const errEl = $("#submitError");
@@ -350,23 +512,27 @@ form.addEventListener("submit", async (e) => {
   const data = collectData();
   try {
     if (CONFIG.SCRIPT_URL) {
-      await fetch(CONFIG.SCRIPT_URL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify(data),
+      await postWithRetry(CONFIG.SCRIPT_URL, data, (attempt, max) => {
+        btn.textContent = `Đang thử lại (${attempt}/${max})...`;
       });
     } else {
       console.warn("[PEC] Chưa cấu hình SCRIPT_URL – dữ liệu chưa được lưu vào Google Sheet:", data);
       await new Promise((r) => setTimeout(r, 600));
     }
+    try {
+      localStorage.setItem("pec_last_submit", String(Date.now()));
+      sessionStorage.removeItem(DRAFT_KEY);
+    } catch (_) {}
+    releaseTrafficSlot();
+    clearInterval(queueTimer);
+
     $("#thanksName").textContent = data.hoTen;
     $("#thanksBan").textContent = data.ban;
     form.reset();
     goStep(4);
   } catch (err) {
     console.error(err);
-    errEl.textContent = "Gửi đơn thất bại, vui lòng kiểm tra kết nối mạng và thử lại.";
+    errEl.textContent = "Hệ thống đang bận hoặc mất kết nối mạng. Dữ liệu của bạn vẫn được giữ nguyên, vui lòng bấm gửi lại sau vài giây!";
   } finally {
     btn.disabled = false;
     btn.textContent = "Gửi đơn đăng ký 🚀";
