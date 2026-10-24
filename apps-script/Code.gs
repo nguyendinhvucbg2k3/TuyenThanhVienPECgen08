@@ -6,6 +6,7 @@
 // ---- Câu hỏi chung (giống Phần 1 của Google Form) ----
 const COMMON = [
   ['hoTen', 'Họ và tên của bạn ?'],
+  ['email', 'Email ( Chú ý viết đúng để nhận mail thông báo) ?'],
   ['sdt', 'Số điện thoại liên hệ (Ưu tiên SĐT sử dụng Zalo) ?'],
   ['facebook', 'Link Facebook cá nhân ?'],
   ['gioiTinh', 'Giới tính của bạn ?'],
@@ -90,7 +91,7 @@ function formatSheet(sh, cols) {
     if (c[0] === 'timestamp') w = 150;
     else if (['sdt', 'gioiTinh', 'khoa', 'tt_q1', 'tt_q2'].includes(c[0])) w = 140;
     else if (c[0] === 'hoTen') w = 190;
-    else if (['facebook', 'ban', 'tt_q4'].includes(c[0])) w = 230;
+    else if (['email', 'facebook', 'ban', 'tt_q4'].includes(c[0])) w = 230;
     sh.setColumnWidth(col, w);
   });
 

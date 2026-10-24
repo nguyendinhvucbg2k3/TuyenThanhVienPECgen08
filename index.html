@@ -2,7 +2,8 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0a0a0a" />
   <title>PEC Gen 8 – New Blood, New Era | Tuyển thành viên Phenikaa Esports Club</title>
   <meta name="description" content="Phenikaa Esports Club (PEC) tuyển thành viên Gen 8 – New Blood, New Era. Vòng Sơ tuyển 26/10 – 04/11/2026, Vòng Phỏng vấn 06/11/2026." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -234,6 +235,10 @@
                 <input type="text" id="hoTen" name="hoTen" placeholder="Nguyễn Văn A" required />
               </div>
               <div class="field">
+                <label for="email">Email ( Chú ý viết đúng để nhận mail thông báo) ? <span class="req">*</span></label>
+                <input type="email" id="email" name="email" placeholder="example@gmail.com" required />
+              </div>
+              <div class="field">
                 <label for="sdt">Số điện thoại liên hệ (Ưu tiên SĐT sử dụng Zalo) ? <span class="req">*</span></label>
                 <input type="tel" id="sdt" name="sdt" placeholder="09xxxxxxxx" required />
               </div>
@@ -374,14 +379,22 @@
         <!-- B4: Cảm ơn -->
         <div class="panel" id="step4">
           <div class="form-card thanks">
-            <div class="thanks__icon">🎉</div>
-            <h3>Cảm ơn <span id="thanksName">bạn</span> đã đăng ký!</h3>
-            <p>Đơn ứng tuyển vào <strong class="accent" id="thanksBan"></strong> của bạn đã được PEC ghi nhận.</p>
-            <p>📧 Vui lòng <strong>chờ email / tin nhắn</strong> thông báo kết quả <strong>Vòng Sơ tuyển</strong>. Nếu vượt qua, bạn sẽ bước vào <strong>Vòng Phỏng vấn ngày 06/11/2026</strong> (trực tiếp tại Đại học Phenikaa). Kết quả chính thức sẽ được công bố vào ngày <strong>10/11/2026</strong>.</p>
-            <p class="muted">Trong lúc chờ, hãy theo dõi Fanpage và tham gia Group cộng đồng của PEC để không bỏ lỡ thông tin nhé!</p>
-            <div class="hero__cta center-flex">
-              <a href="https://www.facebook.com/esc.phenikaa/" target="_blank" rel="noopener" class="btn">Theo dõi Fanpage</a>
-              <a href="https://www.facebook.com/groups/esc.pka" target="_blank" rel="noopener" class="btn btn--ghost">Vào Group cộng đồng</a>
+            <div class="thanks__body">
+              <div class="thanks__icon">🎉</div>
+              <h3>Cảm ơn <span id="thanksName">bạn</span> đã đăng ký!</h3>
+              <p>Đơn ứng tuyển vào <strong class="accent" id="thanksBan"></strong> của bạn đã được PEC ghi nhận.</p>
+              <p>📧 Vui lòng <strong>chờ email / tin nhắn</strong> thông báo kết quả <strong>Vòng Sơ tuyển</strong>. Nếu vượt qua, bạn sẽ bước vào <strong>Vòng Phỏng vấn ngày 06/11/2026</strong> (trực tiếp tại Đại học Phenikaa). Kết quả chính thức sẽ được công bố vào ngày <strong>10/11/2026</strong>.</p>
+              <p class="muted">Trong lúc chờ, hãy theo dõi Fanpage và tham gia <strong>Nhóm Zalo Hỗ Trợ</strong> của PEC để nhận thông báo nhanh nhất nhé!</p>
+              <div class="hero__cta thanks__cta">
+                <a href="https://www.facebook.com/esc.phenikaa/" target="_blank" rel="noopener" class="btn">Theo dõi Fanpage</a>
+                <a href="https://zalo.me/g/vuhn4eo5ctcch0o1qbg5" target="_blank" rel="noopener" class="btn btn--ghost">Vào Nhóm Zalo Hỗ Trợ</a>
+              </div>
+            </div>
+            <div class="thanks__qr">
+              <a href="https://zalo.me/g/vuhn4eo5ctcch0o1qbg5" target="_blank" rel="noopener">
+                <img src="assets/zalo-qr.png" alt="Mã QR Nhóm Zalo Hỗ Trợ Tuyển Thành Viên PEC Gen 08" />
+              </a>
+              <p class="muted small">Quét mã QR hoặc bấm vào ảnh để vào nhóm</p>
             </div>
           </div>
         </div>

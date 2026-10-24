@@ -31,9 +31,25 @@ const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 const form = $("#regForm");
 let currentBranch = null;
 
-/* ---------- Menu mobile ---------- */
-$("#navToggle").addEventListener("click", () => $("#navLinks").classList.toggle("open"));
-$$("#navLinks a").forEach((a) => a.addEventListener("click", () => $("#navLinks").classList.remove("open")));
+/* ---------- Menu mobile / tablet ---------- */
+const navToggle = $("#navToggle");
+const navLinks = $("#navLinks");
+function setMenuOpen(open) {
+  navLinks.classList.toggle("open", open);
+  navToggle.setAttribute("aria-expanded", String(open));
+  navToggle.textContent = open ? "✕" : "☰";
+}
+navToggle.addEventListener("click", () => setMenuOpen(!navLinks.classList.contains("open")));
+$$("#navLinks a").forEach((a) => a.addEventListener("click", () => setMenuOpen(false)));
+document.addEventListener("click", (e) => {
+  if (navLinks.classList.contains("open") && !e.target.closest(".nav")) setMenuOpen(false);
+});
+addEventListener("keydown", (e) => {
+  if (e.key === "Escape") setMenuOpen(false);
+});
+addEventListener("resize", () => {
+  if (innerWidth > 920 && navLinks.classList.contains("open")) setMenuOpen(false);
+});
 
 /* ---------- Trạng thái đợt tuyển ---------- */
 function regState() {
@@ -257,6 +273,9 @@ function validateScope(scope) {
     if (!v) {
       setError(field, "Đây là câu hỏi bắt buộc.");
       ok = false;
+    } else if (input.id === "email" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) {
+      setError(field, "Email chưa đúng định dạng (ví dụ: tenban@gmail.com).");
+      ok = false;
     } else if (input.id === "sdt" && !/^(0|\+84)\d{9,10}$/.test(v.replace(/[\s.-]/g, ""))) {
       setError(field, "Số điện thoại chưa hợp lệ.");
       ok = false;
@@ -288,6 +307,7 @@ function collectData() {
   const val = (n) => ($(`[name="${n}"]:checked`) || $(`[name="${n}"]`))?.value.trim() || "";
   const data = {
     hoTen: val("hoTen"),
+    email: val("email"),
     sdt: val("sdt"),
     facebook: val("facebook"),
     gioiTinh: val("gioiTinh"),
