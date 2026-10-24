@@ -8,13 +8,15 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Chakra+Petch:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="icon" type="image/png" href="assets/favicon.png" />
+  <link rel="apple-touch-icon" href="assets/favicon.png" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <!-- ============ NAVBAR ============ -->
   <header class="nav">
     <div class="container nav__inner">
-      <a href="#home" class="nav__logo"><span>PEC</span> GEN 8</a>
+      <a href="#home" class="nav__logo"><img src="assets/logo.png" alt="Logo Phenikaa Esports Club" /><span>PEC</span> GEN 8</a>
       <button class="nav__toggle" id="navToggle" aria-label="Mở menu">☰</button>
       <nav class="nav__links" id="navLinks">
         <a href="#home">Trang chủ</a>
@@ -32,6 +34,7 @@
     <section id="home" class="hero">
       <div class="container hero__grid">
         <div class="hero__text">
+          <img src="assets/logo.png" alt="Logo Phenikaa Esports Club" class="hero__logo" />
           <p class="tag">🩸 NEW BLOOD, NEW ERA 🩸</p>
           <h1>PHENIKAA ESPORTS CLUB<br /><span class="accent">TUYỂN THÀNH VIÊN GEN 8</span></h1>
           <p class="hero__slogan">🔥 Một thế hệ mới. Một kỷ nguyên mới. Một hành trình viết nên lịch sử!</p>
@@ -137,7 +140,7 @@
             <div class="round__body">
               <p class="round__state"></p>
               <h3>Vòng Sơ tuyển</h3>
-              <p class="round__date">📅 26/10/2026 – 04/11/2026</p>
+              <p class="round__date">📅 10:00 26/10/2026 – 23:59 04/11/2026</p>
               <p>Điền đơn đăng ký online trên website: thông tin cá nhân và trả lời các câu hỏi của ban bạn ứng tuyển. Kết quả sẽ được thông báo qua email / tin nhắn.</p>
               <div class="round__actions">
                 <a class="btn btn--sm" target="_blank" rel="noopener" data-gcal="r1">+ Google Calendar</a>
@@ -209,7 +212,7 @@
               <h3>NEW BLOOD, NEW ERA</h3>
               <p class="muted">Tuyển thành viên Gen 8</p>
               <ul class="timeline">
-                <li><span>📝 Vòng 1 – Sơ tuyển (điền đơn đăng ký)</span><strong>Từ 26/10/2026 đến hết 04/11/2026</strong></li>
+                <li><span>📝 Vòng 1 – Sơ tuyển (điền đơn đăng ký)</span><strong>Từ 10:00 ngày 26/10/2026 đến hết 04/11/2026</strong></li>
                 <li><span>🎤 Vòng 2 – Phỏng vấn</span><strong>06/11/2026 – Trực tiếp tại Đại học Phenikaa</strong></li>
                 <li><span>🏆 Thông báo kết quả</span><strong>10/11/2026</strong></li>
               </ul>
@@ -401,7 +404,7 @@
   </main>
 
   <footer class="footer">
-    <div class="container">© 2026 Phenikaa Esports Club · New Blood. New Energy. New Era.</div>
+    <div class="container"><img src="assets/logo.png" alt="Logo PEC" class="footer__logo" />© 2026 Phenikaa Esports Club · New Blood. New Energy. New Era.</div>
   </footer>
 
   <script src="script.js"></script>

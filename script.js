@@ -6,7 +6,7 @@ const CONFIG = {
   SCRIPT_URL: "https://script.google.com/macros/s/AKfycbzg_bjdjLl2EDc7fy94j4VjlriikkFt0TwyLQYYVHxMS2nlVGXhlemsud7a6nnxDVbhmA/exec",
 
   // Vòng 1 – Sơ tuyển (mở / đóng đơn, giờ Việt Nam)
-  OPEN_AT: new Date("2026-10-26T00:00:00+07:00"),
+  OPEN_AT: new Date("2026-10-26T10:00:00+07:00"),
   CLOSE_AT: new Date("2026-11-04T23:59:59+07:00"),
 
   // Vòng 2 – Phỏng vấn (cả ngày 06/11/2026)
@@ -17,10 +17,12 @@ const CONFIG = {
   RESULT_START: new Date("2026-11-10T00:00:00+07:00"),
   RESULT_END: new Date("2026-11-10T23:59:59+07:00"),
 
-  // true = chỉ cho đăng ký trong khoảng thời gian trên
-  // false = luôn cho đăng ký (tiện để test)
-  ENFORCE_DATES: false,
+  // true = khoá nút "Đăng ký ngay" cho đến đúng OPEN_AT (10:00 26/10/2026)
+  LOCK_BEFORE_OPEN: true,
 };
+
+// Ban tổ chức muốn test trước giờ mở đơn: thêm ?test=1 vào cuối link website
+const TEST_MODE = new URLSearchParams(location.search).has("test");
 
 /* ========================================================= */
 const $ = (s, el = document) => el.querySelector(s);
@@ -41,6 +43,11 @@ function regState() {
   return "open";
 }
 
+function isLocked() {
+  if (TEST_MODE) return false;
+  return regState() === "soon" && CONFIG.LOCK_BEFORE_OPEN;
+}
+
 function renderStatus() {
   const st = regState();
   const el = $("#regStatus");
@@ -48,7 +55,8 @@ function renderStatus() {
     const d = Math.floor(ms / 86400000);
     const h = Math.floor((ms % 86400000) / 3600000);
     const m = Math.floor((ms % 3600000) / 60000);
-    return `${d} ngày ${h} giờ ${m} phút`;
+    const s = Math.floor((ms % 60000) / 1000);
+    return `${d} ngày ${h} giờ ${m} phút ${s} giây`;
   };
   if (st === "soon") {
     el.innerHTML = `<span class="pill pill--soon">Sắp mở đơn Sơ tuyển</span> Còn ${fmt(CONFIG.OPEN_AT - new Date())}`;
@@ -57,17 +65,23 @@ function renderStatus() {
   } else {
     el.innerHTML = `<span class="pill pill--closed">Đã đóng đơn Sơ tuyển</span> Cảm ơn bạn đã quan tâm!`;
   }
-  $("#btnStart").disabled = CONFIG.ENFORCE_DATES && st !== "open";
+  if (TEST_MODE) el.innerHTML += ` <span class="pill pill--soon">TEST MODE</span>`;
+
+  const locked = isLocked();
+  const btn = $("#btnStart");
+  btn.disabled = locked;
+  btn.textContent = !locked ? "Đăng ký ngay!" : "🔒 Mở đơn lúc 10:00 – 26/10/2026";
+  $$("[data-start-register]").forEach((a) => a.classList.toggle("is-locked", locked));
 }
 renderStatus();
-setInterval(renderStatus, 30000);
+setInterval(renderStatus, 1000);
 
 /* ---------- Timeline: đếm ngược + lịch + thêm sự kiện ---------- */
 const EVENTS = {
   r1: {
     title: "PEC Gen 8 – Vòng Sơ tuyển (mở đơn đăng ký)",
     start: "20261026", end: "20261105", // ngày kết thúc không tính (all-day)
-    details: "Điền đơn đăng ký tuyển thành viên Phenikaa Esports Club Gen 8 – New Blood, New Era. Hạn chót: hết ngày 04/11/2026.",
+    details: "Điền đơn đăng ký tuyển thành viên Phenikaa Esports Club Gen 8 – New Blood, New Era. Mở đơn lúc 10:00 ngày 26/10/2026, hạn chót: hết ngày 04/11/2026.",
     location: "Online",
   },
   r2: {
@@ -193,7 +207,10 @@ function goStep(n) {
   $("#tuyen").scrollIntoView({ behavior: "smooth" });
 }
 
-$("#btnStart").addEventListener("click", () => goStep(2));
+$("#btnStart").addEventListener("click", () => {
+  if (isLocked()) return;
+  goStep(2);
+});
 $$("[data-go]").forEach((b) => b.addEventListener("click", () => goStep(+b.dataset.go)));
 
 // Các nút "Đăng ký ngay" ở trang chủ -> về bước 1 của phần tuyển
@@ -299,6 +316,10 @@ form.addEventListener("submit", async (e) => {
   e.preventDefault();
   const scope = $(`.branch[data-branch="${currentBranch}"]`);
   if (!validateScope(scope)) return;
+  if (isLocked()) {
+    $("#submitError").textContent = "Hiện chưa trong thời gian nhận đơn Sơ tuyển (Mở đơn lúc 10:00 – 26/10/2026).";
+    return;
+  }
 
   const btn = $("#btnSubmit");
   const errEl = $("#submitError");

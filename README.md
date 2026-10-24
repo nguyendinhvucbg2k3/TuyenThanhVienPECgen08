@@ -10,7 +10,7 @@ Website tĩnh (HTML/CSS/JS thuần), không cần cài đặt hay build. Dữ li
 
 | Mốc | Thời gian | Hình thức |
 |---|---|---|
-| 📝 Vòng 1 – Sơ tuyển | 26/10/2026 – hết 04/11/2026 | Điền đơn online trên website |
+| 📝 Vòng 1 – Sơ tuyển | 10:00 26/10/2026 – hết 04/11/2026 | Điền đơn online trên website |
 | 🎤 Vòng 2 – Phỏng vấn | 06/11/2026 | Trực tiếp tại Đại học Phenikaa |
 | 🏆 Thông báo kết quả | 10/11/2026 | Email / Fanpage |
 
@@ -64,13 +64,15 @@ website/
 ```js
 const CONFIG = {
   SCRIPT_URL: "",                 // URL Web App của Apps Script
-  OPEN_AT:  new Date("2026-10-26T00:00:00+07:00"),   // Mở đơn Sơ tuyển
-  CLOSE_AT: new Date("2026-11-04T23:59:59+07:00"),   // Đóng đơn Sơ tuyển
+  OPEN_AT:  new Date("2026-10-26T10:00:00+07:00"),   // Mốc mở đơn Sơ tuyển (10:00)
+  CLOSE_AT: new Date("2026-11-04T23:59:59+07:00"),   // Mốc đóng đơn Sơ tuyển
   INTERVIEW_START / INTERVIEW_END,                   // Ngày phỏng vấn 06/11
   RESULT_START / RESULT_END,                         // Ngày thông báo kết quả 10/11
-  ENFORCE_DATES: false,           // true = chỉ cho đăng ký trong thời gian Sơ tuyển
+  LOCK_BEFORE_OPEN: true,         // Khoá nút Đăng ký ngay trước 10:00 26/10
 };
 ```
+
+> **Dành cho Ban Tổ Chức muốn test trước giờ mở đơn:** Thêm tham số `?test=1` vào cuối URL trang web (ví dụ: `https://.../index.html?test=1`). Khi có tham số này, web sẽ hiển thị nhãn `TEST MODE` và mở khóa toàn bộ nút đăng ký để test nộp form.
 
 > [!IMPORTANT]
 > Trước khi chính thức mở đơn, hãy đặt `ENFORCE_DATES: true` và kiểm tra `SCRIPT_URL` đã được điền.

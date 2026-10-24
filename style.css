@@ -376,3 +376,22 @@ h1 .accent, .title .accent, .landing__info h3 {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
 @media (hover: none) { .cursor-glow { display: none; } }
+
+/* Nút đăng ký khi chưa mở đơn */
+.btn.is-locked::before { content: "🔒 "; }
+#btnStart:disabled { animation: none; filter: grayscale(.4); cursor: not-allowed; }
+
+/* Logo */
+.nav__logo { display: flex; align-items: center; gap: 10px; }
+.nav__logo img { height: 40px; width: 40px; object-fit: contain; filter: drop-shadow(0 0 6px rgba(255,106,0,.6)); }
+.hero__logo {
+  width: 110px; height: 110px; object-fit: contain; margin-bottom: 18px;
+  filter: drop-shadow(0 0 14px rgba(255,106,0,.7));
+  animation: logoGlow 3s ease-in-out infinite;
+}
+@keyframes logoGlow {
+  0%, 100% { filter: drop-shadow(0 0 10px rgba(255,106,0,.5)); }
+  50% { filter: drop-shadow(0 0 24px rgba(255,106,0,.95)); }
+}
+.footer__logo { width: 56px; height: 56px; object-fit: contain; margin: 0 auto 10px; opacity: .85; }
+@media (max-width: 760px) { .hero__logo { width: 80px; height: 80px; } }
