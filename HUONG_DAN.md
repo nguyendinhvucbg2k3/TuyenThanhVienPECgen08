@@ -1,30 +1,31 @@
-# Hướng dẫn kết nối website với Google Sheet
+# Hướng dẫn kết nối Website với Google Sheet & Gửi Email tự động
 
-## 1. Tạo Google Sheet & dán script
-1. Vào https://sheets.new để tạo một Google Sheet mới (đặt tên, ví dụ: `PEC Gen 8 - Đơn đăng ký`).
-2. Menu **Tiện ích mở rộng → Apps Script**.
-3. Xoá hết code mặc định, dán toàn bộ nội dung file `apps-script/Code.gs` vào, rồi bấm **Lưu**.
-4. Chọn hàm `setup` ở thanh công cụ rồi bấm **Chạy** → cấp quyền khi được hỏi.
-   → Sheet sẽ tự tạo 4 trang tính đã căn chỉnh sẵn (tiêu đề cam, cố định hàng tiêu đề, xuống dòng, độ rộng cột):
-   - `Câu trả lời biểu mẫu` – tất cả đơn, mỗi câu hỏi là một cột (giống kết quả Google Form)
-   - `Ban Vận hành`, `Ban Truyền thông & Thiết kế`, `Ban Cộng đồng & Đối ngoại` – lọc riêng theo từng ban
+## 1. Tạo Google Sheet & dán Apps Script
+1. Mở Google Sheet nhận đơn đăng ký của bạn (hoặc vào https://sheets.new tạo mới).
+2. Trên thanh menu chọn **Tiện ích mở rộng (Extensions) → Apps Script**.
+3. Xoá hết code mặc định, copy toàn bộ nội dung trong file `apps-script/Code.gs` dán vào, rồi bấm **Lưu (💾)**.
+4. Chọn hàm **`setup`** ở thanh công cụ phía trên rồi bấm **Chạy (Run)**.
+5. **Cấp quyền cho Script** (chỉ cần làm 1 lần):
+   - Bấm **Xem lại quyền (Review permissions)** → Chọn tài khoản Gmail của bạn.
+   - Bấm **Nâng cao (Advanced)** → **Đi tới ... (unsafe)** → **Cho phép (Allow)** (bao gồm quyền ghi Google Sheet và quyền gửi Email bản sao câu trả lời cho ứng viên).
+   - Sau khi chạy xong, Google Sheet sẽ tự động tạo & căn chỉnh 4 trang tính:
+     - `Câu trả lời biểu mẫu` – Tất cả đơn đăng ký (mỗi câu hỏi là 1 cột).
+     - `Ban Vận hành`, `Ban Truyền thông & Thiết kế`, `Ban Cộng đồng & Đối ngoại` – Tự động lọc riêng theo từng ban.
 
-## 2. Triển khai Web App
-1. Bấm **Triển khai → Tùy chọn triển khai mới**.
-2. Loại: **Ứng dụng web**.
-   - Thực thi dưới dạng: **Tôi (Me)**
-   - Người có quyền truy cập: **Bất kỳ ai (Anyone)**
-3. Bấm **Triển khai**, copy **URL ứng dụng web** (dạng `https://script.google.com/macros/s/.../exec`).
+## 2. Triển khai (hoặc Cập nhật) Web App
+- **Nếu triển khai lần đầu:**
+  1. Bấm **Triển khai (Deploy) → Tùy chọn triển khai mới (New deployment)**.
+  2. Chọn loại: **Ứng dụng web (Web app)**.
+     - Thực thi dưới dạng: **Tôi (Me)**
+     - Người có quyền truy cập: **Bất kỳ ai (Anyone)**
+  3. Bấm **Triển khai**, copy **URL ứng dụng web** (`https://script.google.com/macros/s/.../exec`) dán vào `SCRIPT_URL` trong file `script.js`.
 
-## 3. Gắn URL vào website
-Mở `script.js`, dán URL vào:
-```js
-SCRIPT_URL: "https://script.google.com/macros/s/XXXX/exec",
-```
-Muốn khoá đăng ký ngoài thời gian Sơ tuyển (26/10 – 04/11/2026) thì đặt `ENFORCE_DATES: true`.
+- **Nếu cập nhật lại code `Code.gs` trên Web App đã có:**
+  1. Bấm **Triển khai (Deploy) → Quản lý các bản triển khai (Manage deployments)**.
+  2. Bấm biểu tượng **Chỉnh sửa (✏️)** ở bản triển khai hiện tại.
+  3. Tại mục **Phiên bản (Version)**, chọn **Phiên bản mới (New version)**.
+  4. Bấm **Triển khai (Deploy)** (URL giữ nguyên, không cần sửa lại `script.js`).
 
-> Nếu sửa `Code.gs` sau này: **Triển khai → Quản lý các lần triển khai → Chỉnh sửa → Phiên bản mới** (URL giữ nguyên).
-
-## 4. Đưa website lên mạng (miễn phí)
-- **Netlify Drop**: vào https://app.netlify.com/drop và kéo thả cả thư mục `website`.
-- Hoặc **GitHub Pages** / **Firebase Hosting**.
+## 3. Các tham số kiểm thử nhanh cho Ban Tổ Chức
+- **Test điền đơn trước giờ mở (`10:00 26/10/2026`):** Thêm `?test=1` vào cuối link website (ví dụ: `https://ten-web.vercel.app/?test=1`).
+- **Test giao diện Phòng chờ chống quá tải:** Thêm `?queue=1` vào cuối link website (ví dụ: `https://ten-web.vercel.app/?queue=1`).
